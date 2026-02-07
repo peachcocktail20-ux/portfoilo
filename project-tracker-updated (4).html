@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 기록</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg: #ffffff;
+            --color-text: #000000;
+            --color-border: #000000;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 48px;
+            --spacing-xl: 64px;
+        }
+
+        body {
+            font-family: 'Archivo', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        /* Header */
+        header {
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--spacing-xs);
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        h1:hover {
+            opacity: 0.7;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            position: fixed;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--color-border);
+            background: var(--color-bg);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover {
+            background: var(--color-text);
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--color-text);
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover span {
+            background: var(--color-bg);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        /* Side Menu */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: var(--color-bg);
+            border-left: 2px solid var(--color-border);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .side-menu.active {
+            right: 0;
+        }
+
+        .side-menu h2 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+            letter-spacing: -0.01em;
+        }
+
+        .side-menu nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .side-menu nav button {
+            padding: 16px 24px;
+            background: transparent;
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+            border-bottom: none;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-family: 'Archivo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .side-menu nav button:last-child {
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .side-menu nav button:hover {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .side-menu nav button.active {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Home Screen */
+        .home-screen {
+            display: flex;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg) 0;
+            overflow-x: auto;
+        }
+
+        .category-card {
+            flex: 1;
+            min-width: 300px;
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--color-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--color-text);
+            transition: left 0.3s ease;
+            z-index: 0;
+        }
+
+        .category-card:hover::before {
+            left: 0;
+        }
+
+        .category-card > * {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+
+        .category-card:hover > * {
+            color: var(--color-bg);
+        }
+
+        .category-card h2 {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .category-card .count {
+            font-size: 1rem;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Add Section */
+        .add-section {
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .add-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .form-row, .form-row-three {
+            display: grid;
+            gap: var(--spacing-sm);
+        }
+
+        .form-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-row-three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="url"],
+        input[type="file"],
+        select,
+        textarea {
+            padding: 12px 16px;
+            border: 2px solid var(--color-border);
+            background: var(--color-bg);
+            font-family: 'Archivo', sans-serif;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button[type="submit"] {
+            margin-top: var(--spacing-sm);
+            padding: 16px 32px;
+            background: var(--color-text);
+            color: var(--color-bg);
+            border: 2px solid var(--color-border);
+            font-family: 'Archivo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        /* Members Section */
+        .members-section {
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 2px solid var(--color-border);
+        }
+
+        .members-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        .members-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-sm);
+        }
+
+        .member-item {
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-start;
+        }
+
+        .member-photo-container {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f5f5f5;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .member-photo-container:hover {
+            background: #e8e8e8;
+        }
+
+        .member-photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-photo-placeholder {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: center;
+            padding: var(--spacing-xs);
+            pointer-events: none;
+        }
+
+        .member-photo-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .member-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .member-name-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xs);
+        }
+
+        .member-info input[type="text"],
+        .member-info input[type="date"],
+        .member-info input[type="url"],
+        .member-info textarea {
+            width: 100%;
+        }
+
+        .member-info textarea {
+            min-height: 60px;
+        }
+
+        .member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .member-number {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Tracks Section (for NEW ALBUM) */
+        .tracks-section {
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 2px solid var(--color-border);
+        }
+
+        .tracks-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        .tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-sm);
+        }
+
+        .track-item {
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-start;
+        }
+
+        .track-thumbnail-container {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        .track-thumbnail-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .track-thumbnail-placeholder {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: center;
+            padding: var(--spacing-xs);
+        }
+
+        .track-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .track-name-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xs);
+        }
+
+        .track-info input[type="text"],
+        .track-info input[type="url"],
+        .track-info textarea {
+            width: 100%;
+        }
+
+        .track-info textarea {
+            min-height: 60px;
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .track-number {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Tracks Display in Project Card */
+        .project-tracks {
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 2px solid var(--color-border);
+        }
+
+        .project-tracks-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .project-track-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .project-track-card {
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-xs);
+            display: flex;
+            gap: var(--spacing-xs);
+            background: #fafafa;
+        }
+
+        .project-track-thumbnail {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--color-border);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .project-track-info {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+
+        .project-track-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .project-track-credits {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .project-track-desc {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .project-track-link {
+            font-size: 0.75rem;
+            color: var(--color-text);
+            text-decoration: underline;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .project-card {
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-md);
+            transition: all 0.3s ease;
+            background: var(--color-bg);
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 8px 8px 0 var(--color-border);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border: 2px solid var(--color-border);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .project-status {
+            padding: 4px 12px;
+            border: 2px solid var(--color-border);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .project-status.정규 {
+            background: #e3f2fd;
+        }
+
+        .project-status.미니 {
+            background: #fff3e0;
+        }
+
+        .project-status.싱글 {
+            background: #e8f5e9;
+        }
+
+        .project-status.디지털\ 싱글 {
+            background: #f3e5f5;
+        }
+
+        .project-status.해외\(번안\) {
+            background: #fff9c4;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .project-description {
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.6;
+        }
+
+        .project-link {
+            display: inline-block;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-text);
+            text-decoration: underline;
+            transition: opacity 0.2s;
+        }
+
+        .project-link:hover {
+            opacity: 0.7;
+        }
+
+        .project-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--color-border);
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 2px solid var(--color-border);
+            cursor: pointer;
+            font-family: 'Archivo', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: var(--spacing-xl);
+            opacity: 0.4;
+            font-size: 1.1rem;
+        }
+
+        /* Members Display in Project Card */
+        .project-members {
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 2px solid var(--color-border);
+        }
+
+        .project-members-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .project-member-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .project-member-card {
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-xs);
+            display: flex;
+            gap: var(--spacing-xs);
+            background: #fafafa;
+        }
+
+        .project-member-photo {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--color-border);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .project-member-info {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+
+        .project-member-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .project-member-birth {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .project-member-desc {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .home-screen {
+                flex-direction: column;
+            }
+
+            .category-card {
+                min-width: 100%;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row,
+            .form-row-three {
+                grid-template-columns: 1fr;
+            }
+
+            .member-item {
+                flex-direction: column;
+            }
+
+            .member-photo-container {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="menu-overlay" onclick="toggleMenu()"></div>
+
+    <div class="side-menu">
+        <h2>Navigation</h2>
+        <nav>
+            <button id="nav-home" class="active" onclick="showSection('home')">Home</button>
+            <button id="nav-newboy" onclick="showSection('newboy')">New Boy</button>
+            <button id="nav-newgirl" onclick="showSection('newgirl')">New Girl</button>
+            <button id="nav-newalbum" onclick="showSection('newalbum')">New Album</button>
+        </nav>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 onclick="showSection('home')">PROJECT TRACKER</h1>
+            <p class="subtitle">Portfolio & Project Management</p>
+        </header>
+
+        <!-- Home Section -->
+        <section class="section active" id="home">
+            <div class="home-screen">
+                <div class="category-card" onclick="showSection('newboy')">
+                    <h2>NEW<br>BOY</h2>
+                    <p class="count" id="count-newboy">0 projects</p>
+                </div>
+                <div class="category-card" onclick="showSection('newgirl')">
+                    <h2>NEW<br>GIRL</h2>
+                    <p class="count" id="count-newgirl">0 projects</p>
+                </div>
+                <div class="category-card" onclick="showSection('newalbum')">
+                    <h2>NEW<br>ALBUM</h2>
+                    <p class="count" id="count-newalbum">0 projects</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Boy Section -->
+        <section class="section" id="newboy">
+            <div class="add-section">
+                <h2>NEW BOY</h2>
+                <form class="projectForm" data-category="newboy">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <input type="text" class="projectName" placeholder="그룹명" required>
+                            <input type="text" class="projectCompany" placeholder="회사명">
+                        </div>
+                        <div class="form-row">
+                            <select class="memberCount">
+                                <option value="">멤버 수 선택</option>
+                                <option value="3">3명</option>
+                                <option value="4">4명</option>
+                                <option value="5">5명</option>
+                                <option value="6">6명</option>
+                                <option value="7">7명</option>
+                                <option value="8">8명</option>
+                                <option value="9">9명</option>
+                                <option value="10">10명</option>
+                                <option value="11">11명</option>
+                                <option value="12">12명</option>
+                            </select>
+                            <input type="date" class="projectDate">
+                        </div>
+                        <input type="file" class="projectImage" accept="image/*">
+                        <input type="url" class="projectLink" placeholder="링크 (https://)">
+                        <textarea class="projectDescription" placeholder="그룹 설명 및 메모"></textarea>
+                    </div>
+
+                    <div class="members-section" style="display: none;">
+                        <h3>멤버 정보</h3>
+                        <div class="members-container"></div>
+                    </div>
+
+                    <button type="submit">프로젝트 추가</button>
+                </form>
+            </div>
+            <div class="projects-grid" id="projectsGrid-newboy">
+                <div class="empty-state">아직 등록된 프로젝트가 없습니다</div>
+            </div>
+        </section>
+
+        <!-- New Girl Section -->
+        <section class="section" id="newgirl">
+            <div class="add-section">
+                <h2>NEW GIRL</h2>
+                <form class="projectForm" data-category="newgirl">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <input type="text" class="projectName" placeholder="그룹명" required>
+                            <input type="text" class="projectCompany" placeholder="회사명">
+                        </div>
+                        <div class="form-row">
+                            <select class="memberCount">
+                                <option value="">멤버 수 선택</option>
+                                <option value="3">3명</option>
+                                <option value="4">4명</option>
+                                <option value="5">5명</option>
+                                <option value="6">6명</option>
+                                <option value="7">7명</option>
+                                <option value="8">8명</option>
+                                <option value="9">9명</option>
+                                <option value="10">10명</option>
+                                <option value="11">11명</option>
+                                <option value="12">12명</option>
+                            </select>
+                            <input type="date" class="projectDate">
+                        </div>
+                        <input type="file" class="projectImage" accept="image/*">
+                        <input type="url" class="projectLink" placeholder="링크 (https://)">
+                        <textarea class="projectDescription" placeholder="그룹 설명 및 메모"></textarea>
+                    </div>
+
+                    <div class="members-section" style="display: none;">
+                        <h3>멤버 정보</h3>
+                        <div class="members-container"></div>
+                    </div>
+
+                    <button type="submit">프로젝트 추가</button>
+                </form>
+            </div>
+            <div class="projects-grid" id="projectsGrid-newgirl">
+                <div class="empty-state">아직 등록된 프로젝트가 없습니다</div>
+            </div>
+        </section>
+
+        <!-- New Album Section -->
+        <section class="section" id="newalbum">
+            <div class="add-section">
+                <h2>NEW ALBUM</h2>
+                <form class="projectForm" data-category="newalbum">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <input type="text" class="projectName" placeholder="앨범명" required>
+                            <input type="text" class="projectCompany" placeholder="회사명">
+                        </div>
+                        <div class="form-row-three">
+                            <select class="projectStatus" required>
+                                <option value="">유형 선택</option>
+                                <option value="정규">정규</option>
+                                <option value="미니">미니</option>
+                                <option value="싱글">싱글</option>
+                                <option value="디지털 싱글">디지털 싱글</option>
+                                <option value="해외(번안)">해외(번안)</option>
+                            </select>
+                            <select class="trackCount">
+                                <option value="">곡 수 선택</option>
+                                <option value="1">1곡</option>
+                                <option value="2">2곡</option>
+                                <option value="3">3곡</option>
+                                <option value="4">4곡</option>
+                                <option value="5">5곡</option>
+                                <option value="6">6곡</option>
+                                <option value="7">7곡</option>
+                                <option value="8">8곡</option>
+                                <option value="9">9곡</option>
+                                <option value="10">10곡</option>
+                                <option value="11">11곡</option>
+                                <option value="12">12곡</option>
+                            </select>
+                            <input type="date" class="projectDate">
+                        </div>
+                        <input type="file" class="projectImage" accept="image/*">
+                        <input type="url" class="projectLink" placeholder="링크 (https://)">
+                        <textarea class="projectDescription" placeholder="앨범 설명 및 메모"></textarea>
+                    </div>
+
+                    <div class="tracks-section" style="display: none;">
+                        <h3>수록곡 정보</h3>
+                        <div class="tracks-container"></div>
+                    </div>
+
+                    <button type="submit">프로젝트 추가</button>
+                </form>
+            </div>
+            <div class="projects-grid" id="projectsGrid-newalbum">
+                <div class="empty-state">아직 등록된 프로젝트가 없습니다</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let projects = {
+            newboy: JSON.parse(localStorage.getItem('projects-newboy')) || [],
+            newgirl: JSON.parse(localStorage.getItem('projects-newgirl')) || [],
+            newalbum: JSON.parse(localStorage.getItem('projects-newalbum')) || []
+        };
+
+        // Member photos storage
+        let memberPhotos = {};
+
+        function toggleMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const sideMenu = document.querySelector('.side-menu');
+            const overlay = document.querySelector('.menu-overlay');
+            
+            hamburger.classList.toggle('active');
+            sideMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.side-menu nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('nav-' + sectionId).classList.add('active');
+            
+            if (sectionId !== 'home') {
+                const hamburger = document.querySelector('.hamburger');
+                const sideMenu = document.querySelector('.side-menu');
+                const overlay = document.querySelector('.menu-overlay');
+                
+                hamburger.classList.remove('active');
+                sideMenu.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        function updateCounts() {
+            document.getElementById('count-newboy').textContent = `${projects.newboy.length} projects`;
+            document.getElementById('count-newgirl').textContent = `${projects.newgirl.length} projects`;
+            document.getElementById('count-newalbum').textContent = `${projects.newalbum.length} projects`;
+        }
+
+        // Handle member count selection
+        document.querySelectorAll('.memberCount').forEach(select => {
+            select.addEventListener('change', function() {
+                const form = this.closest('form');
+                const membersSection = form.querySelector('.members-section');
+                const membersContainer = form.querySelector('.members-container');
+                const count = parseInt(this.value);
+
+                if (count && count >= 3 && count <= 12) {
+                    membersSection.style.display = 'block';
+                    membersContainer.innerHTML = '';
+                    
+                    for (let i = 1; i <= count; i++) {
+                        const memberItem = createMemberInput(i);
+                        membersContainer.appendChild(memberItem);
+                    }
+                } else {
+                    membersSection.style.display = 'none';
+                    membersContainer.innerHTML = '';
+                }
+            });
+        });
+
+        // Handle track count selection
+        document.querySelectorAll('.trackCount').forEach(select => {
+            select.addEventListener('change', function() {
+                const form = this.closest('form');
+                const tracksSection = form.querySelector('.tracks-section');
+                const tracksContainer = form.querySelector('.tracks-container');
+                const count = parseInt(this.value);
+
+                if (count && count >= 1 && count <= 12) {
+                    tracksSection.style.display = 'block';
+                    tracksContainer.innerHTML = '';
+                    
+                    for (let i = 1; i <= count; i++) {
+                        const trackItem = createTrackInput(i);
+                        tracksContainer.appendChild(trackItem);
+                    }
+                } else {
+                    tracksSection.style.display = 'none';
+                    tracksContainer.innerHTML = '';
+                }
+            });
+        });
+
+        function createMemberInput(index) {
+            const div = document.createElement('div');
+            div.className = 'member-item';
+            div.innerHTML = `
+                <div class="member-photo-container">
+                    <div class="member-photo-placeholder">사진 추가</div>
+                    <img class="member-photo-preview" style="display: none;">
+                    <input type="file" class="memberPhoto member-photo-input" accept="image/*" data-index="${index}">
+                </div>
+                <div class="member-info">
+                    <div class="member-header">
+                        <span class="member-number">Member ${index}</span>
+                    </div>
+                    <div class="member-name-row">
+                        <input type="text" class="memberName" placeholder="멤버 이름" data-index="${index}">
+                        <input type="date" class="memberBirth" placeholder="생년월일" data-index="${index}">
+                    </div>
+                    <textarea class="memberDesc" placeholder="멤버 정보" data-index="${index}"></textarea>
+                </div>
+            `;
+
+            // Handle photo preview
+            const photoInput = div.querySelector('.memberPhoto');
+            const photoPreview = div.querySelector('.member-photo-preview');
+            const photoPlaceholder = div.querySelector('.member-photo-placeholder');
+
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        photoPreview.src = event.target.result;
+                        photoPreview.style.display = 'block';
+                        photoPlaceholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            return div;
+        }
+
+        function createTrackInput(index) {
+            const div = document.createElement('div');
+            div.className = 'track-item';
+            div.innerHTML = `
+                <div class="track-thumbnail-container">
+                    <div class="track-thumbnail-placeholder">링크 썸네일</div>
+                    <img class="track-thumbnail-preview" style="display: none;">
+                </div>
+                <div class="track-info">
+                    <div class="track-header">
+                        <span class="track-number">Track ${index}</span>
+                    </div>
+                    <div class="track-name-row">
+                        <input type="text" class="trackName" placeholder="곡 이름" data-index="${index}">
+                        <input type="text" class="trackCredits" placeholder="작사/작곡" data-index="${index}">
+                    </div>
+                    <input type="url" class="trackLink" placeholder="링크 (YouTube, Spotify 등)" data-index="${index}">
+                    <textarea class="trackDesc" placeholder="곡 설명" data-index="${index}"></textarea>
+                </div>
+            `;
+
+            // Handle link thumbnail preview
+            const linkInput = div.querySelector('.trackLink');
+            const thumbnailPreview = div.querySelector('.track-thumbnail-preview');
+            const thumbnailPlaceholder = div.querySelector('.track-thumbnail-placeholder');
+
+            linkInput.addEventListener('blur', async function() {
+                const url = this.value.trim();
+                if (url) {
+                    const thumbnail = await getVideoThumbnail(url);
+                    if (thumbnail) {
+                        thumbnailPreview.src = thumbnail;
+                        thumbnailPreview.style.display = 'block';
+                        thumbnailPlaceholder.style.display = 'none';
+                    }
+                }
+            });
+
+            return div;
+        }
+
+        // Function to extract video thumbnail from URL
+        async function getVideoThumbnail(url) {
+            try {
+                // YouTube
+                const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+                const youtubeMatch = url.match(youtubeRegex);
+                if (youtubeMatch) {
+                    return `https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`;
+                }
+
+                // Spotify (basic placeholder, real thumbnails would need API)
+                if (url.includes('spotify.com')) {
+                    return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="120" height="120"%3E%3Crect fill="%231DB954" width="120" height="120"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="white"%3ESpotify%3C/text%3E%3C/svg%3E';
+                }
+
+                return null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function collectMemberData(form) {
+            const memberInputs = form.querySelectorAll('.member-item');
+            const members = [];
+
+            memberInputs.forEach((item, index) => {
+                const name = item.querySelector('.memberName').value;
+                const birth = item.querySelector('.memberBirth').value;
+                const desc = item.querySelector('.memberDesc').value;
+                const photoPreview = item.querySelector('.member-photo-preview');
+                const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
+
+                if (name || birth || desc || photo) {
+                    members.push({
+                        name: name || '',
+                        birth: birth || '',
+                        description: desc || '',
+                        photo: photo
+                    });
+                }
+            });
+
+            return members;
+        }
+
+        function collectTrackData(form) {
+            const trackInputs = form.querySelectorAll('.track-item');
+            const tracks = [];
+
+            trackInputs.forEach((item, index) => {
+                const name = item.querySelector('.trackName').value;
+                const credits = item.querySelector('.trackCredits').value;
+                const link = item.querySelector('.trackLink').value;
+                const desc = item.querySelector('.trackDesc').value;
+                const thumbnailPreview = item.querySelector('.track-thumbnail-preview');
+                const thumbnail = thumbnailPreview.style.display !== 'none' ? thumbnailPreview.src : null;
+
+                if (name || credits || link || desc || thumbnail) {
+                    tracks.push({
+                        name: name || '',
+                        credits: credits || '',
+                        link: link || '',
+                        description: desc || '',
+                        thumbnail: thumbnail
+                    });
+                }
+            });
+
+            return tracks;
+        }
+
+        function renderProjects(category) {
+            const grid = document.getElementById(`projectsGrid-${category}`);
+            const categoryProjects = projects[category];
+            
+            if (categoryProjects.length === 0) {
+                grid.innerHTML = '<div class="empty-state">아직 등록된 프로젝트가 없습니다</div>';
+                return;
+            }
+
+            // 카테고리별 날짜 라벨 설정
+            let dateLabel = '등록일';
+            if (category === 'newboy' || category === 'newgirl') {
+                dateLabel = '데뷔일';
+            } else if (category === 'newalbum') {
+                dateLabel = '발매일';
+            }
+
+            grid.innerHTML = categoryProjects.map((project, index) => {
+                let membersHTML = '';
+                if (project.members && project.members.length > 0) {
+                    membersHTML = `
+                        <div class="project-members">
+                            <div class="project-members-title">멤버 (${project.members.length}명)</div>
+                            <div class="project-member-list">
+                                ${project.members.map(member => `
+                                    <div class="project-member-card">
+                                        ${member.photo ? `<img src="${member.photo}" class="project-member-photo" alt="${member.name}">` : ''}
+                                        <div class="project-member-info">
+                                            <div class="project-member-name">${member.name || '이름 없음'}</div>
+                                            ${member.birth ? `<div class="project-member-birth">📅 ${formatDate(member.birth)}</div>` : ''}
+                                            ${member.description ? `<div class="project-member-desc">${member.description}</div>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let tracksHTML = '';
+                if (project.tracks && project.tracks.length > 0) {
+                    tracksHTML = `
+                        <div class="project-tracks">
+                            <div class="project-tracks-title">수록곡 (${project.tracks.length}곡)</div>
+                            <div class="project-track-list">
+                                ${project.tracks.map(track => `
+                                    <div class="project-track-card">
+                                        ${track.thumbnail ? `<img src="${track.thumbnail}" class="project-track-thumbnail" alt="${track.name}">` : ''}
+                                        <div class="project-track-info">
+                                            <div class="project-track-name">${track.name || '곡명 없음'}</div>
+                                            ${track.credits ? `<div class="project-track-credits">✍️ ${track.credits}</div>` : ''}
+                                            ${track.description ? `<div class="project-track-desc">${track.description}</div>` : ''}
+                                            ${track.link ? `<a href="${track.link}" target="_blank" class="project-track-link">🔗 링크 열기</a>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="project-card">
+                        ${project.image ? `<img src="${project.image}" alt="${project.name}" class="project-image">` : ''}
+                        <div class="project-header">
+                            <h3 class="project-title">${project.name}</h3>
+                            ${project.status ? `<span class="project-status ${project.status}">${project.status}</span>` : ''}
+                        </div>
+                        <div class="project-meta">
+                            ${project.company ? `<span>🏢 ${project.company}</span>` : ''}
+                            ${project.date ? `<span>📅 ${formatDate(project.date)}</span>` : ''}
+                            ${project.memberCount ? `<span>👥 ${project.memberCount}명</span>` : ''}
+                            ${project.trackCount ? `<span>🎵 ${project.trackCount}곡</span>` : ''}
+                        </div>
+                        <p class="project-description">${project.description || '설명 없음'}</p>
+                        ${project.link ? `<a href="${project.link}" target="_blank" class="project-link">🔗 링크 열기</a>` : ''}
+                        ${membersHTML}
+                        ${tracksHTML}
+                        <div class="project-footer">
+                            ${project.date ? `<span class="project-date">${dateLabel}: ${formatDate(project.date)}</span>` : '<span class="project-date">날짜 미설정</span>'}
+                            <button class="delete-btn" onclick="deleteProject('${category}', ${index})">삭제</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteProject(category, index) {
+            if (confirm('이 프로젝트를 삭제하시겠습니까?')) {
+                projects[category].splice(index, 1);
+                localStorage.setItem(`projects-${category}`, JSON.stringify(projects[category]));
+                renderProjects(category);
+                updateCounts();
+            }
+        }
+
+        // Handle form submissions
+        document.querySelectorAll('.projectForm').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const category = this.dataset.category;
+                const imageFile = this.querySelector('.projectImage').files[0];
+                
+                if (imageFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        saveProject(category, form, event.target.result);
+                    };
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    saveProject(category, form, null);
+                }
+            });
+        });
+
+        function saveProject(category, form, imageData) {
+            const memberCountSelect = form.querySelector('.memberCount');
+            const trackCountSelect = form.querySelector('.trackCount');
+            const statusSelect = form.querySelector('.projectStatus');
+            const members = memberCountSelect ? collectMemberData(form) : [];
+            const tracks = trackCountSelect ? collectTrackData(form) : [];
+
+            const newProject = {
+                name: form.querySelector('.projectName').value,
+                company: form.querySelector('.projectCompany').value,
+                status: statusSelect ? statusSelect.value : null,
+                date: form.querySelector('.projectDate').value,
+                link: form.querySelector('.projectLink').value,
+                description: form.querySelector('.projectDescription').value,
+                image: imageData,
+                memberCount: memberCountSelect ? memberCountSelect.value : null,
+                trackCount: trackCountSelect ? trackCountSelect.value : null,
+                members: members,
+                tracks: tracks,
+                createdDate: new Date().toISOString()
+            };
+
+            projects[category].unshift(newProject);
+            localStorage.setItem(`projects-${category}`, JSON.stringify(projects[category]));
+            
+            form.reset();
+            const membersSection = form.querySelector('.members-section');
+            if (membersSection) {
+                membersSection.style.display = 'none';
+                form.querySelector('.members-container').innerHTML = '';
+            }
+            const tracksSection = form.querySelector('.tracks-section');
+            if (tracksSection) {
+                tracksSection.style.display = 'none';
+                form.querySelector('.tracks-container').innerHTML = '';
+            }
+            
+            renderProjects(category);
+            updateCounts();
+        }
+
+        // Initial render
+        renderProjects('newboy');
+        renderProjects('newgirl');
+        renderProjects('newalbum');
+        updateCounts();
+    </script>
+</body>
+</html>
