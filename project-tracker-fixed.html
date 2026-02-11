@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 기록</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // ⚠️ Firebase 설정 - Firebase Console에서 복사하세요
+      const firebaseConfig = {
+  apiKey: "AIzaSyDOTiaLBxOii4332WMkY-V1lAp1QG3Trl4",
+  authDomain: "portfolio-d02ab.firebaseapp.com",
+  databaseURL: "https://portfolio-d02ab-default-rtdb.firebaseio.com",
+  projectId: "portfolio-d02ab",
+  storageBucket: "portfolio-d02ab.firebasestorage.app",
+  messagingSenderId: "672416390421",
+  appId: "1:672416390421:web:91d8fe8b682566d1305d1c",
+  measurementId: "G-DTP9531SZT"
+};
+
+        const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+        
+        let app, database;
+        if (isFirebaseConfigured) {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+        }
+
+        window.firebaseDB = {
+            isConfigured: isFirebaseConfigured,
+            
+            async saveProjects(category, data) {
+                if (!isFirebaseConfigured) {
+                    localStorage.setItem(`projects-${category}`, JSON.stringify(data));
+                    return;
+                }
+                const projectsRef = ref(database, `projects/${category}`);
+                await set(projectsRef, data);
+            },
+            
+            async loadProjects(category) {
+                if (!isFirebaseConfigured) {
+                    const data = localStorage.getItem(`projects-${category}`);
+                    return data ? JSON.parse(data) : [];
+                }
+                const projectsRef = ref(database, `projects/${category}`);
+                const snapshot = await get(projectsRef);
+                return snapshot.exists() ? snapshot.val() : [];
+            },
+            
+            subscribeToProjects(category, callback) {
+                if (!isFirebaseConfigured) return;
+                const projectsRef = ref(database, `projects/${category}`);
+                onValue(projectsRef, (snapshot) => {
+                    const data = snapshot.exists() ? snapshot.val() : [];
+                    callback(data);
+                });
+            }
+        };
+
+        if (!isFirebaseConfigured) {
+            console.log('%c⚠️ Firebase 미설정', 'color: orange; font-size: 14px; font-weight: bold;');
+            console.log('Firebase를 설정하면 모든 기기에서 데이터를 동기화할 수 있습니다.');
+            console.log('설정 방법: FIREBASE_SETUP_GUIDE.md 참고');
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg: #ffffff;
+            --color-text: #000000;
+            --color-border: #000000;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 48px;
+            --spacing-xl: 64px;
+        }
+
+        body {
+            font-family: 'Archivo', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        /* Header */
+        header {
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--spacing-xs);
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        h1:hover {
+            opacity: 0.7;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            position: fixed;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--color-border);
+            background: var(--color-bg);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover {
+            background: var(--color-text);
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--color-text);
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover span {
+            background: var(--color-bg);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        /* Side Menu */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: var(--color-bg);
+            border-left: 2px solid var(--color-border);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .side-menu.active {
+            right: 0;
+        }
+
+        .side-menu h2 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+            letter-spacing: -0.01em;
+        }
+
+        .side-menu nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .side-menu nav button {
+            padding: 16px 24px;
+            background: transparent;
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+            border-bottom: none;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-family: 'Archivo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .side-menu nav button:last-child {
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .side-menu nav button:hover {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .side-menu nav button.active {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Home Screen */
+        .home-screen {
+            display: flex;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg) 0;
+            overflow-x: auto;
+        }
+
+        .category-card {
+            flex: 1;
+            min-width: 300px;
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--color-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--color-text);
+            transition: left 0.3s ease;
+            z-index: 0;
+        }
+
+        .category-card:hover::before {
+            left: 0;
+        }
+
+        .category-card > * {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+
+        .category-card:hover > * {
+            color: var(--color-bg);
+        }
+
+        .category-card h2 {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .category-card .count {
+            font-size: 1rem;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Add Section */
+        .add-section {
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .add-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .form-row, .form-row-three {
+            display: grid;
+            gap: var(--spacing-sm);
+        }
+
+        .form-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-row-three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="url"],
+        input[type="file"],
+        select,
+        textarea {
+            padding: 12px 16px;
+            border: 2px solid var(--color-border);
+            background: var(--color-bg);
+            font-family: 'Archivo', sans-serif;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button[type="submit"] {
+            margin-top: var(--spacing-sm);
+            padding: 16px 32px;
+            background: var(--color-text);
+            color: var(--color-bg);
+            border: 2px solid var(--color-border);
+            font-family: 'Archivo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        /* Members Section */
+        .members-section, .tracks-section {
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 2px solid var(--color-border);
+        }
+
+        .members-section h3, .tracks-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+
+        .members-container, .tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-sm);
+        }
+
+        .member-item, .track-item {
+            border: 2px solid var(--color-border);
+            padding: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-start;
+        }
+
+        .member-photo-container, .track-thumbnail-container {
+            flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f5f5f5;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .member-photo-container:hover, .track-thumbnail-container:hover {
+            background: #e8e8e8;
+        }
+
+        .member-photo-preview, .track-thumbnail-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-photo-placeholder, .track-thumbnail-placeholder {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: center;
+            padding: var(--spacing-xs);
+            pointer-events: none;
+        }
+
+        .member-photo-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .member-info, .track-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .member-name-row, .track-name-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xs);
+        }
+
+        .member-info input, .member-info textarea,
+        .track-info input, .track-info textarea {
+            width: 100%;
+        }
+
+        .member-info textarea, .track-info textarea {
+            min-height: 60px;
+        }
+
+        .member-header, .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .member-number, .track-number {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Projects Grid - Thumbnail Style */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .project-card {
+            border: 2px solid var(--color-border);
+            transition: all 0.3s ease;
+            background: var(--color-bg);
+            cursor: pointer;
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 8px 8px 0 var(--color-border);
+        }
+
+        .project-card-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-color: #f5f5f5;
+        }
+
+        .project-card-thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+        }
+
+        .project-card-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: var(--spacing-md);
+            color: white;
+            z-index: 1;
+            text-align: center;
+            width: 90%;
+        }
+
+        .project-card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        .project-card-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            flex-wrap: wrap;
+        }
+
+        .project-card-info > div {
+            white-space: nowrap;
+        }
+
+        .project-card-actions {
+            position: absolute;
+            bottom: var(--spacing-sm);
+            right: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
+            z-index: 2;
+        }
+
+        .project-card-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.5));
+        }
+
+        .project-card-action-btn:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.8));
+        }
+
+        .project-card-status {
+            position: absolute;
+            top: var(--spacing-sm);
+            left: var(--spacing-sm);
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--color-border);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 1;
+            color: var(--color-text);
+        }
+
+        .project-status.정규 {
+            background: rgba(227, 242, 253, 0.9);
+        }
+
+        .project-status.미니 {
+            background: rgba(255, 243, 224, 0.9);
+        }
+
+        .project-status.싱글 {
+            background: rgba(232, 245, 233, 0.9);
+        }
+
+        .project-status.디지털\ 싱글 {
+            background: rgba(243, 229, 245, 0.9);
+        }
+
+        .project-status.해외\(번안\) {
+            background: rgba(255, 249, 196, 0.9);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md);
+        }
+
+        .modal-content {
+            background: var(--color-bg);
+            border: 2px solid var(--color-border);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: var(--spacing-md);
+            border-bottom: 2px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--color-bg);
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--color-border);
+            background: var(--color-bg);
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .modal-body {
+            padding: var(--spacing-md);
+        }
+
+        .modal-actions {
+            padding: var(--spacing-md);
+            border-top: 2px solid var(--color-border);
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+            position: sticky;
+            bottom: 0;
+            background: var(--color-bg);
+        }
+
+        .modal-actions button {
+            padding: 12px 24px;
+            border: 2px solid var(--color-border);
+            background: var(--color-bg);
+            font-family: 'Archivo', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-actions button:hover {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .modal-actions button.primary {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .modal-actions button.primary:hover {
+            opacity: 0.8;
+        }
+
+        .detail-section {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .detail-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.6;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+        }
+
+        .detail-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border: 2px solid var(--color-border);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .detail-members, .detail-tracks {
+            margin-top: var(--spacing-sm);
+        }
+
+        .detail-member-list, .detail-track-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .detail-member-card, .detail-track-card {
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
+            background: #fafafa;
+        }
+
+        .detail-member-photo, .detail-track-thumbnail {
+            width: 80px;
+            height: 80px;
+            border: 1px solid var(--color-border);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .detail-member-info, .detail-track-info {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .detail-member-name, .detail-track-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .detail-member-birth, .detail-track-credits {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .detail-member-desc, .detail-track-desc {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .detail-track-link {
+            font-size: 0.8rem;
+            color: var(--color-text);
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: var(--spacing-xl);
+            opacity: 0.4;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .home-screen {
+                flex-direction: column;
+            }
+
+            .category-card {
+                min-width: 100%;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row,
+            .form-row-three {
+                grid-template-columns: 1fr;
+            }
+
+            .member-item, .track-item {
+                flex-direction: column;
+            }
+
+            .member-photo-container, .track-thumbnail-container {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hamburger" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="menu-overlay" onclick="toggleMenu()"></div>
+
+    <div class="side-menu">
+        <h2>Navigation</h2>
+        <nav>
+            <button id="nav-home" class="active" onclick="showSection('home')">Home</button>
+            <button id="nav-newboy" onclick="showSection('newboy')">New Boy</button>
+            <button id="nav-newgirl" onclick="showSection('newgirl')">New Girl</button>
+            <button id="nav-newalbum" onclick="showSection('newalbum')">New Album</button>
+        </nav>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 onclick="showSection('home')">PROJECT TRACKER</h1>
+            <p class="subtitle">Portfolio & Project Management</p>
+        </header>
+
+        <!-- Home Section -->
+        <section class="section active" id="home">
+            <div class="home-screen">
+                <div class="category-card" onclick="showSection('newboy')">
+                    <h2>NEW<br>BOY</h2>
+                    <p class="count" id="count-newboy">0 projects</p>
+                </div>
+                <div class="category-card" onclick="showSection('newgirl')">
+                    <h2>NEW<br>GIRL</h2>
+                    <p class="count" id="count-newgirl">0 projects</p>
+                </div>
+                <div class="category-card" onclick="showSection('newalbum')">
+                    <h2>NEW<br>ALBUM</h2>
+                    <p class="count" id="count-newalbum">0 projects</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Boy Section -->
+        <section class="section" id="newboy">
+            <div class="add-section">
+                <h2>NEW BOY</h2>
+                <form class="projectForm" data-category="newboy">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <input type="text" class="projectName" placeholder="그룹명" required>
+                            <input type="text" class="projectCompany" placeholder="회사명">
+                        </div>
+                        <div class="form-row">
+                            <select class="memberCount">
+                                <option value="">멤버 수 선택</option>
+                                <option value="3">3명</option>
+                                <option value="4">4명</option>
+                                <option value="5">5명</option>
+                                <option value="6">6명</option>
+                                <option value="7">7명</option>
+                                <option value="8">8명</option>
+                                <option value="9">9명</option>
+                                <option value="10">10명</option>
+                                <option value="11">11명</option>
+                                <option value="12">12명</option>
+                            </select>
+                            <input type="date" class="projectDate">
+                        </div>
+                        <input type="file" class="projectImage" accept="image/*">
+                        <input type="url" class="projectLink" placeholder="링크 (https://)">
+                        <textarea class="projectDescription" placeholder="그룹 설명 및 메모"></textarea>
+                    </div>
+
+                    <div class="members-section" style="display: none;">
+                        <h3>멤버 정보</h3>
+                        <div class="members-container"></div>
+                    </div>
+
+                    <button type="submit">프로젝트 추가</button>
+                </form>
+            </div>
+            <div class="projects-grid" id="projectsGrid-newboy">
+                <div class="empty-state">아직 등록된 프로젝트가 없습니다</div>
+            </div>
+        </section>
+
+        <!-- New Girl Section -->
+        <section class="section" id="newgirl">
+            <div class="add-section">
+                <h2>NEW GIRL</h2>
+                <form class="projectForm" data-category="newgirl">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <input type="text" class="projectName" placeholder="그룹명" required>
+                            <input type="text" class="projectCompany" placeholder="회사명">
+                        </div>
+                        <div class="form-row">
+                            <select class="memberCount">
+                                <option value="">멤버 수 선택</option>
+                                <option value="3">3명</option>
+                                <option value="4">4명</option>
+                                <option value="5">5명</option>
+                                <option value="6">6명</option>
+                                <option value="7">7명</option>
+                                <option value="8">8명</option>
+                                <option value="9">9명</option>
+                                <option value="10">10명</option>
+                                <option value="11">11명</option>
+                                <option value="12">12명</option>
+                            </select>
+                            <input type="date" class="projectDate">
+                        </div>
+                        <input type="file" class="projectImage" accept="image/*">
+                        <input type="url" class="projectLink" placeholder="링크 (https://)">
+                        <textarea class="projectDescription" placeholder="그룹 설명 및 메모"></textarea>
+                    </div>
+
+                    <div class="members-section" style="display: none;">
+                        <h3>멤버 정보</h3>
+                        <div class="members-container"></div>
+                    </div>
+
+                    <button type="submit">프로젝트 추가</button>
+                </form>
+            </div>
+            <div class="projects-grid" id="projectsGrid-newgirl">
+                <div class="empty-state">아직 등록된 프로젝트가 없습니다</div>
+            </div>
+        </section>
+
+        <!-- New Album Section -->
+        <section class="section" id="newalbum">
+            <div class="add-section">
+                <h2>NEW ALBUM</h2>
+                <form class="projectForm" data-category="newalbum">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <input type="text" class="projectName" placeholder="앨범명" required>
+                            <input type="text" class="projectCompany" placeholder="가수명">
+                        </div>
+                        <div class="form-row-three">
+                            <select class="projectStatus" required>
+                                <option value="">유형 선택</option>
+                                <option value="정규">정규</option>
+                                <option value="미니">미니</option>
+                                <option value="싱글">싱글</option>
+                                <option value="디지털 싱글">디지털 싱글</option>
+                                <option value="해외(번안)">해외(번안)</option>
+                            </select>
+                            <select class="trackCount">
+                                <option value="">곡 수 선택</option>
+                                <option value="1">1곡</option>
+                                <option value="2">2곡</option>
+                                <option value="3">3곡</option>
+                                <option value="4">4곡</option>
+                                <option value="5">5곡</option>
+                                <option value="6">6곡</option>
+                                <option value="7">7곡</option>
+                                <option value="8">8곡</option>
+                                <option value="9">9곡</option>
+                                <option value="10">10곡</option>
+                                <option value="11">11곡</option>
+                                <option value="12">12곡</option>
+                            </select>
+                            <input type="date" class="projectDate">
+                        </div>
+                        <input type="file" class="projectImage" accept="image/*">
+                        <input type="url" class="projectLink" placeholder="링크 (https://)">
+                        <textarea class="projectDescription" placeholder="앨범 설명 및 메모"></textarea>
+                    </div>
+
+                    <div class="tracks-section" style="display: none;">
+                        <h3>수록곡 정보</h3>
+                        <div class="tracks-container"></div>
+                    </div>
+
+                    <button type="submit">프로젝트 추가</button>
+                </form>
+            </div>
+            <div class="projects-grid" id="projectsGrid-newalbum">
+                <div class="empty-state">아직 등록된 프로젝트가 없습니다</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Detail/Edit Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">프로젝트 상세</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-actions">
+                <button onclick="closeModal()">닫기</button>
+                <button class="primary" onclick="startEdit()">수정</button>
+                <button onclick="confirmDelete()" style="background: #ff4444; color: white; border-color: #ff4444;">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let projects = {
+            newboy: [],
+            newgirl: [],
+            newalbum: []
+        };
+
+        let currentProject = null;
+        let currentCategory = null;
+        let currentIndex = null;
+
+        // Firebase에서 데이터 로드
+        async function initializeData() {
+            projects.newboy = await window.firebaseDB.loadProjects('newboy');
+            projects.newgirl = await window.firebaseDB.loadProjects('newgirl');
+            projects.newalbum = await window.firebaseDB.loadProjects('newalbum');
+            
+            renderProjects('newboy');
+            renderProjects('newgirl');
+            renderProjects('newalbum');
+            updateCounts();
+
+            // 실시간 동기화 (Firebase 설정된 경우)
+            if (window.firebaseDB.isConfigured) {
+                window.firebaseDB.subscribeToProjects('newboy', (data) => {
+                    projects.newboy = data;
+                    renderProjects('newboy');
+                    updateCounts();
+                });
+                window.firebaseDB.subscribeToProjects('newgirl', (data) => {
+                    projects.newgirl = data;
+                    renderProjects('newgirl');
+                    updateCounts();
+                });
+                window.firebaseDB.subscribeToProjects('newalbum', (data) => {
+                    projects.newalbum = data;
+                    renderProjects('newalbum');
+                    updateCounts();
+                });
+            }
+        }
+
+        function toggleMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const sideMenu = document.querySelector('.side-menu');
+            const overlay = document.querySelector('.menu-overlay');
+            
+            hamburger.classList.toggle('active');
+            sideMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.side-menu nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('nav-' + sectionId).classList.add('active');
+            
+            if (sectionId !== 'home') {
+                const hamburger = document.querySelector('.hamburger');
+                const sideMenu = document.querySelector('.side-menu');
+                const overlay = document.querySelector('.menu-overlay');
+                
+                hamburger.classList.remove('active');
+                sideMenu.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        function updateCounts() {
+            document.getElementById('count-newboy').textContent = `${projects.newboy.length} projects`;
+            document.getElementById('count-newgirl').textContent = `${projects.newgirl.length} projects`;
+            document.getElementById('count-newalbum').textContent = `${projects.newalbum.length} projects`;
+        }
+
+        // Handle member count selection
+        document.querySelectorAll('.memberCount').forEach(select => {
+            select.addEventListener('change', function() {
+                const form = this.closest('form');
+                const membersSection = form.querySelector('.members-section');
+                const membersContainer = form.querySelector('.members-container');
+                const count = parseInt(this.value);
+
+                if (count && count >= 3 && count <= 12) {
+                    membersSection.style.display = 'block';
+                    membersContainer.innerHTML = '';
+                    
+                    for (let i = 1; i <= count; i++) {
+                        const memberItem = createMemberInput(i);
+                        membersContainer.appendChild(memberItem);
+                    }
+                } else {
+                    membersSection.style.display = 'none';
+                    membersContainer.innerHTML = '';
+                }
+            });
+        });
+
+        // Handle track count selection
+        document.querySelectorAll('.trackCount').forEach(select => {
+            select.addEventListener('change', function() {
+                const form = this.closest('form');
+                const tracksSection = form.querySelector('.tracks-section');
+                const tracksContainer = form.querySelector('.tracks-container');
+                const count = parseInt(this.value);
+
+                if (count && count >= 1 && count <= 12) {
+                    tracksSection.style.display = 'block';
+                    tracksContainer.innerHTML = '';
+                    
+                    for (let i = 1; i <= count; i++) {
+                        const trackItem = createTrackInput(i);
+                        tracksContainer.appendChild(trackItem);
+                    }
+                } else {
+                    tracksSection.style.display = 'none';
+                    tracksContainer.innerHTML = '';
+                }
+            });
+        });
+
+        function createMemberInput(index) {
+            const div = document.createElement('div');
+            div.className = 'member-item';
+            div.innerHTML = `
+                <div class="member-photo-container">
+                    <div class="member-photo-placeholder">사진 추가</div>
+                    <img class="member-photo-preview" style="display: none;">
+                    <input type="file" class="memberPhoto member-photo-input" accept="image/*" data-index="${index}">
+                </div>
+                <div class="member-info">
+                    <div class="member-header">
+                        <span class="member-number">Member ${index}</span>
+                    </div>
+                    <div class="member-name-row">
+                        <input type="text" class="memberName" placeholder="멤버 이름" data-index="${index}">
+                        <input type="date" class="memberBirth" placeholder="생년월일" data-index="${index}">
+                    </div>
+                    <textarea class="memberDesc" placeholder="멤버 정보" data-index="${index}"></textarea>
+                </div>
+            `;
+
+            const photoInput = div.querySelector('.memberPhoto');
+            const photoPreview = div.querySelector('.member-photo-preview');
+            const photoPlaceholder = div.querySelector('.member-photo-placeholder');
+
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        photoPreview.src = event.target.result;
+                        photoPreview.style.display = 'block';
+                        photoPlaceholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            return div;
+        }
+
+        function createTrackInput(index) {
+            const div = document.createElement('div');
+            div.className = 'track-item';
+            div.innerHTML = `
+                <div class="track-thumbnail-container">
+                    <div class="track-thumbnail-placeholder">링크 썸네일</div>
+                    <img class="track-thumbnail-preview" style="display: none;">
+                </div>
+                <div class="track-info">
+                    <div class="track-header">
+                        <span class="track-number">Track ${index}</span>
+                    </div>
+                    <div class="track-name-row">
+                        <input type="text" class="trackName" placeholder="곡 이름" data-index="${index}">
+                        <input type="text" class="trackCredits" placeholder="작사/작곡" data-index="${index}">
+                    </div>
+                    <input type="url" class="trackLink" placeholder="링크 (YouTube, Spotify 등)" data-index="${index}">
+                    <textarea class="trackDesc" placeholder="곡 설명" data-index="${index}"></textarea>
+                </div>
+            `;
+
+            const linkInput = div.querySelector('.trackLink');
+            const thumbnailPreview = div.querySelector('.track-thumbnail-preview');
+            const thumbnailPlaceholder = div.querySelector('.track-thumbnail-placeholder');
+
+            linkInput.addEventListener('blur', async function() {
+                const url = this.value.trim();
+                if (url) {
+                    const thumbnail = await getVideoThumbnail(url);
+                    if (thumbnail) {
+                        thumbnailPreview.src = thumbnail;
+                        thumbnailPreview.style.display = 'block';
+                        thumbnailPlaceholder.style.display = 'none';
+                    }
+                }
+            });
+
+            return div;
+        }
+
+        async function getVideoThumbnail(url) {
+            try {
+                const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+                const youtubeMatch = url.match(youtubeRegex);
+                if (youtubeMatch) {
+                    return `https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`;
+                }
+
+                if (url.includes('spotify.com')) {
+                    return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="120" height="120"%3E%3Crect fill="%231DB954" width="120" height="120"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="white"%3ESpotify%3C/text%3E%3C/svg%3E';
+                }
+
+                return null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function collectMemberData(form) {
+            const memberInputs = form.querySelectorAll('.member-item');
+            const members = [];
+
+            memberInputs.forEach((item, index) => {
+                const name = item.querySelector('.memberName').value;
+                const birth = item.querySelector('.memberBirth').value;
+                const desc = item.querySelector('.memberDesc').value;
+                const photoPreview = item.querySelector('.member-photo-preview');
+                const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
+
+                if (name || birth || desc || photo) {
+                    members.push({
+                        name: name || '',
+                        birth: birth || '',
+                        description: desc || '',
+                        photo: photo
+                    });
+                }
+            });
+
+            return members;
+        }
+
+        function collectTrackData(form) {
+            const trackInputs = form.querySelectorAll('.track-item');
+            const tracks = [];
+
+            trackInputs.forEach((item, index) => {
+                const name = item.querySelector('.trackName').value;
+                const credits = item.querySelector('.trackCredits').value;
+                const link = item.querySelector('.trackLink').value;
+                const desc = item.querySelector('.trackDesc').value;
+                const thumbnailPreview = item.querySelector('.track-thumbnail-preview');
+                const thumbnail = thumbnailPreview.style.display !== 'none' ? thumbnailPreview.src : null;
+
+                if (name || credits || link || desc || thumbnail) {
+                    tracks.push({
+                        name: name || '',
+                        credits: credits || '',
+                        link: link || '',
+                        description: desc || '',
+                        thumbnail: thumbnail
+                    });
+                }
+            });
+
+            return tracks;
+        }
+
+        function renderProjects(category) {
+            const grid = document.getElementById(`projectsGrid-${category}`);
+            const categoryProjects = projects[category];
+            
+            if (categoryProjects.length === 0) {
+                grid.innerHTML = '<div class="empty-state">아직 등록된 프로젝트가 없습니다</div>';
+                return;
+            }
+
+            let dateLabel = '등록일';
+            if (category === 'newboy' || category === 'newgirl') {
+                dateLabel = '데뷔일';
+            } else if (category === 'newalbum') {
+                dateLabel = '발매일';
+            }
+
+            grid.innerHTML = categoryProjects.map((project, index) => {
+                const bgImage = project.image ? `background-image: url('${project.image}');` : '';
+                
+                let cardInfo = '';
+                if (category === 'newboy' || category === 'newgirl') {
+                    cardInfo = `
+                        ${project.company ? `<div>🏢 ${project.company}</div>` : ''}
+                        ${project.memberCount ? `<div>👥 ${project.memberCount}명</div>` : ''}
+                        ${project.date ? `<div>📅 ${formatDate(project.date)}</div>` : ''}
+                    `;
+                } else if (category === 'newalbum') {
+                    cardInfo = `
+                        ${project.company ? `<div>🎤 ${project.company}</div>` : ''}
+                        ${project.trackCount ? `<div>🎵 ${project.trackCount}곡</div>` : ''}
+                        ${project.date ? `<div>📅 ${formatDate(project.date)}</div>` : ''}
+                    `;
+                }
+
+                return `
+                    <div class="project-card">
+                        <div class="project-card-thumbnail" style="${bgImage}" onclick="showDetail('${category}', ${index})">
+                            ${project.status ? `<div class="project-card-status project-status ${project.status}">${project.status}</div>` : ''}
+                            <div class="project-card-actions">
+                                <div class="project-card-action-btn" onclick="event.stopPropagation(); editProject('${category}', ${index})" title="수정">✏️</div>
+                                <div class="project-card-action-btn" onclick="event.stopPropagation(); deleteProject('${category}', ${index})" title="삭제">🗑️</div>
+                            </div>
+                            <div class="project-card-content">
+                                <div class="project-card-title">${project.name}</div>
+                                <div class="project-card-info">${cardInfo}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showDetail(category, index) {
+            currentCategory = category;
+            currentIndex = index;
+            currentProject = projects[category][index];
+
+            let dateLabel = '등록일';
+            if (category === 'newboy' || category === 'newgirl') {
+                dateLabel = '데뷔일';
+            } else if (category === 'newalbum') {
+                dateLabel = '발매일';
+            }
+
+            let detailHTML = '';
+
+            if (currentProject.image) {
+                detailHTML += `<img src="${currentProject.image}" class="detail-image">`;
+            }
+
+            detailHTML += `<div class="detail-section">`;
+            detailHTML += `<h3>기본 정보</h3>`;
+            detailHTML += `<div class="detail-grid">`;
+            detailHTML += `<div class="detail-item"><div class="detail-label">${category === 'newalbum' ? '앨범명' : '그룹명'}</div><div class="detail-value">${currentProject.name}</div></div>`;
+            detailHTML += `<div class="detail-item"><div class="detail-label">${category === 'newalbum' ? '가수명' : '회사명'}</div><div class="detail-value">${currentProject.company || '-'}</div></div>`;
+            
+            if (currentProject.status) {
+                detailHTML += `<div class="detail-item"><div class="detail-label">유형</div><div class="detail-value">${currentProject.status}</div></div>`;
+            }
+            if (currentProject.memberCount) {
+                detailHTML += `<div class="detail-item"><div class="detail-label">멤버 수</div><div class="detail-value">${currentProject.memberCount}명</div></div>`;
+            }
+            if (currentProject.trackCount) {
+                detailHTML += `<div class="detail-item"><div class="detail-label">곡 수</div><div class="detail-value">${currentProject.trackCount}곡</div></div>`;
+            }
+            if (currentProject.date) {
+                detailHTML += `<div class="detail-item"><div class="detail-label">${dateLabel}</div><div class="detail-value">${formatDate(currentProject.date)}</div></div>`;
+            }
+            detailHTML += `</div>`;
+            
+            if (currentProject.description) {
+                detailHTML += `<div class="detail-item" style="margin-top: 1rem;"><div class="detail-label">설명</div><div class="detail-value">${currentProject.description}</div></div>`;
+            }
+            if (currentProject.link) {
+                detailHTML += `<div class="detail-item" style="margin-top: 1rem;"><div class="detail-label">링크</div><div class="detail-value"><a href="${currentProject.link}" target="_blank">${currentProject.link}</a></div></div>`;
+            }
+            detailHTML += `</div>`;
+
+            if (currentProject.members && currentProject.members.length > 0) {
+                detailHTML += `<div class="detail-section">`;
+                detailHTML += `<h3>멤버 (${currentProject.members.length}명)</h3>`;
+                detailHTML += `<div class="detail-member-list">`;
+                currentProject.members.forEach(member => {
+                    detailHTML += `<div class="detail-member-card">`;
+                    if (member.photo) {
+                        detailHTML += `<img src="${member.photo}" class="detail-member-photo">`;
+                    }
+                    detailHTML += `<div class="detail-member-info">`;
+                    detailHTML += `<div class="detail-member-name">${member.name || '이름 없음'}</div>`;
+                    if (member.birth) {
+                        detailHTML += `<div class="detail-member-birth">📅 ${formatDate(member.birth)}</div>`;
+                    }
+                    if (member.description) {
+                        detailHTML += `<div class="detail-member-desc">${member.description}</div>`;
+                    }
+                    detailHTML += `</div></div>`;
+                });
+                detailHTML += `</div></div>`;
+            }
+
+            if (currentProject.tracks && currentProject.tracks.length > 0) {
+                detailHTML += `<div class="detail-section">`;
+                detailHTML += `<h3>수록곡 (${currentProject.tracks.length}곡)</h3>`;
+                detailHTML += `<div class="detail-track-list">`;
+                currentProject.tracks.forEach(track => {
+                    detailHTML += `<div class="detail-track-card">`;
+                    if (track.thumbnail) {
+                        detailHTML += `<img src="${track.thumbnail}" class="detail-track-thumbnail">`;
+                    }
+                    detailHTML += `<div class="detail-track-info">`;
+                    detailHTML += `<div class="detail-track-name">${track.name || '곡명 없음'}</div>`;
+                    if (track.credits) {
+                        detailHTML += `<div class="detail-track-credits">✍️ ${track.credits}</div>`;
+                    }
+                    if (track.description) {
+                        detailHTML += `<div class="detail-track-desc">${track.description}</div>`;
+                    }
+                    if (track.link) {
+                        detailHTML += `<a href="${track.link}" target="_blank" class="detail-track-link">🔗 링크 열기</a>`;
+                    }
+                    detailHTML += `</div></div>`;
+                });
+                detailHTML += `</div></div>`;
+            }
+
+            document.getElementById('modalBody').innerHTML = detailHTML;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            currentProject = null;
+            currentCategory = null;
+            currentIndex = null;
+        }
+
+        function editProject(category, index) {
+            currentCategory = category;
+            currentIndex = index;
+            currentProject = projects[category][index];
+            startEdit();
+        }
+
+        async function deleteProject(category, index) {
+            if (confirm('이 프로젝트를 삭제하시겠습니까?')) {
+                projects[category].splice(index, 1);
+                await window.firebaseDB.saveProjects(category, projects[category]);
+                renderProjects(category);
+                updateCounts();
+            }
+        }
+
+        function startEdit() {
+            if (!currentProject || currentCategory === null || currentIndex === null) return;
+            
+            closeModal();
+            
+            // Scroll to the category section
+            showSection(currentCategory);
+            
+            // Populate form
+            const form = document.querySelector(`#${currentCategory} .projectForm`);
+            form.querySelector('.projectName').value = currentProject.name || '';
+            form.querySelector('.projectCompany').value = currentProject.company || '';
+            
+            if (currentProject.date) {
+                form.querySelector('.projectDate').value = currentProject.date;
+            }
+            
+            if (form.querySelector('.projectStatus')) {
+                form.querySelector('.projectStatus').value = currentProject.status || '';
+            }
+            
+            if (form.querySelector('.memberCount')) {
+                form.querySelector('.memberCount').value = currentProject.memberCount || '';
+                form.querySelector('.memberCount').dispatchEvent(new Event('change'));
+                
+                // Populate member data
+                setTimeout(() => {
+                    if (currentProject.members) {
+                        currentProject.members.forEach((member, idx) => {
+                            const memberItems = form.querySelectorAll('.member-item');
+                            if (memberItems[idx]) {
+                                memberItems[idx].querySelector('.memberName').value = member.name || '';
+                                memberItems[idx].querySelector('.memberBirth').value = member.birth || '';
+                                memberItems[idx].querySelector('.memberDesc').value = member.description || '';
+                                
+                                if (member.photo) {
+                                    const preview = memberItems[idx].querySelector('.member-photo-preview');
+                                    const placeholder = memberItems[idx].querySelector('.member-photo-placeholder');
+                                    preview.src = member.photo;
+                                    preview.style.display = 'block';
+                                    placeholder.style.display = 'none';
+                                }
+                            }
+                        });
+                    }
+                }, 100);
+            }
+            
+            if (form.querySelector('.trackCount')) {
+                form.querySelector('.trackCount').value = currentProject.trackCount || '';
+                form.querySelector('.trackCount').dispatchEvent(new Event('change'));
+                
+                // Populate track data
+                setTimeout(() => {
+                    if (currentProject.tracks) {
+                        currentProject.tracks.forEach((track, idx) => {
+                            const trackItems = form.querySelectorAll('.track-item');
+                            if (trackItems[idx]) {
+                                trackItems[idx].querySelector('.trackName').value = track.name || '';
+                                trackItems[idx].querySelector('.trackCredits').value = track.credits || '';
+                                trackItems[idx].querySelector('.trackLink').value = track.link || '';
+                                trackItems[idx].querySelector('.trackDesc').value = track.description || '';
+                                
+                                if (track.thumbnail) {
+                                    const preview = trackItems[idx].querySelector('.track-thumbnail-preview');
+                                    const placeholder = trackItems[idx].querySelector('.track-thumbnail-placeholder');
+                                    preview.src = track.thumbnail;
+                                    preview.style.display = 'block';
+                                    placeholder.style.display = 'none';
+                                }
+                            }
+                        });
+                    }
+                }, 100);
+            }
+            
+            form.querySelector('.projectLink').value = currentProject.link || '';
+            form.querySelector('.projectDescription').value = currentProject.description || '';
+            
+            // Store edit mode
+            form.dataset.editMode = 'true';
+            form.dataset.editIndex = currentIndex;
+            
+            // Change button text
+            form.querySelector('button[type="submit"]').textContent = '수정 완료';
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function confirmDelete() {
+            if (!currentProject || currentCategory === null || currentIndex === null) return;
+            
+            if (confirm('이 프로젝트를 삭제하시겠습니까?')) {
+                projects[currentCategory].splice(currentIndex, 1);
+                await window.firebaseDB.saveProjects(currentCategory, projects[currentCategory]);
+                renderProjects(currentCategory);
+                updateCounts();
+                closeModal();
+            }
+        }
+
+        // Handle form submissions
+        document.querySelectorAll('.projectForm').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const category = this.dataset.category;
+                const imageFile = this.querySelector('.projectImage').files[0];
+                
+                if (imageFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        saveProject(category, form, event.target.result);
+                    };
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    // If editing and no new image, use existing image
+                    const existingImage = form.dataset.editMode === 'true' && currentProject ? currentProject.image : null;
+                    saveProject(category, form, existingImage);
+                }
+            });
+        });
+
+        async function saveProject(category, form, imageData) {
+            const memberCountSelect = form.querySelector('.memberCount');
+            const trackCountSelect = form.querySelector('.trackCount');
+            const statusSelect = form.querySelector('.projectStatus');
+            const members = memberCountSelect ? collectMemberData(form) : [];
+            const tracks = trackCountSelect ? collectTrackData(form) : [];
+
+            const projectData = {
+                name: form.querySelector('.projectName').value,
+                company: form.querySelector('.projectCompany').value,
+                status: statusSelect ? statusSelect.value : null,
+                date: form.querySelector('.projectDate').value,
+                link: form.querySelector('.projectLink').value,
+                description: form.querySelector('.projectDescription').value,
+                image: imageData,
+                memberCount: memberCountSelect ? memberCountSelect.value : null,
+                trackCount: trackCountSelect ? trackCountSelect.value : null,
+                members: members,
+                tracks: tracks,
+                createdDate: form.dataset.editMode === 'true' && currentProject ? currentProject.createdDate : new Date().toISOString()
+            };
+
+            if (form.dataset.editMode === 'true') {
+                // Update existing project
+                const editIndex = parseInt(form.dataset.editIndex);
+                projects[category][editIndex] = projectData;
+                form.dataset.editMode = 'false';
+                delete form.dataset.editIndex;
+                form.querySelector('button[type="submit"]').textContent = '프로젝트 추가';
+            } else {
+                // Add new project
+                projects[category].unshift(projectData);
+            }
+
+            await window.firebaseDB.saveProjects(category, projects[category]);
+            
+            form.reset();
+            const membersSection = form.querySelector('.members-section');
+            if (membersSection) {
+                membersSection.style.display = 'none';
+                form.querySelector('.members-container').innerHTML = '';
+            }
+            const tracksSection = form.querySelector('.tracks-section');
+            if (tracksSection) {
+                tracksSection.style.display = 'none';
+                form.querySelector('.tracks-container').innerHTML = '';
+            }
+            
+            renderProjects(category);
+            updateCounts();
+        }
+
+        // Initialize with Firebase
+        initializeData();
+    </script>
+</body>
+</html>
